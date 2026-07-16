@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Touch Type Trainer</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-title">⌨ Touch Type Trainer</div>
+    <nav class="app-nav">
+      <button data-nav="lessons">Lessons</button>
+      <button data-nav="progress">Progress</button>
+    </nav>
+  </header>
+
+  <main class="app-main">
+
+    <section id="screen-welcome" class="screen">
+      <div class="card welcome-card">
+        <h1>Learn to type without looking down</h1>
+        <p>This trainer teaches proper touch-typing technique, one key at a time.</p>
+        <ul class="welcome-list">
+          <li><strong>Colors</strong> on the keyboard show which finger presses each key.</li>
+          <li>The <strong>pulsing key</strong> is the one to press next.</li>
+          <li>Mistakes won't advance the cursor — fix them before moving on.</li>
+          <li>Lessons start on the home row and gradually add new keys.</li>
+        </ul>
+        <button id="btn-start" class="btn btn-primary">Start Learning</button>
+      </div>
+    </section>
+
+    <section id="screen-lessons" class="screen hidden">
+      <h1>Lessons</h1>
+      <div id="lesson-list" class="lesson-list"></div>
+    </section>
+
+    <section id="screen-practice" class="screen hidden">
+      <div class="practice-header">
+        <h2 id="practice-lesson-name"></h2>
+        <div id="practice-new-keys" class="practice-new-keys"></div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat"><span class="stat-label">Time</span><span id="stat-time">0s</span></div>
+        <div class="stat"><span class="stat-label">Accuracy</span><span id="stat-accuracy">100%</span></div>
+        <div class="stat"><span class="stat-label">Errors</span><span id="stat-errors">0</span></div>
+      </div>
+
+      <div id="prompt-text" class="prompt-text"></div>
+
+      <div id="keyboard" class="keyboard"></div>
+    </section>
+
+    <section id="screen-results" class="screen hidden">
+      <div class="card results-card">
+        <h1>Lesson Complete</h1>
+        <div class="results-stats">
+          <div class="result-stat"><span id="result-wpm">0</span><span class="result-stat-label">WPM</span></div>
+          <div class="result-stat"><span id="result-accuracy">0%</span><span class="result-stat-label">Accuracy</span></div>
+        </div>
+        <p id="result-message" class="result-message"></p>
+        <div class="results-buttons">
+          <button id="btn-retry" class="btn">Retry</button>
+          <button id="btn-next-lesson" class="btn btn-primary">Next Lesson</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-progress" class="screen hidden">
+      <h1>Progress</h1>
+      <div id="progress-lesson-list" class="progress-lesson-list"></div>
+      <h2>Recent Sessions</h2>
+      <div id="progress-history" class="progress-history"></div>
+    </section>
+
+  </main>
+
+  <script src="js/fingerMap.js"></script>
+  <script src="js/lessons.js"></script>
+  <script src="js/keyboard.js"></script>
+  <script src="js/typing.js"></script>
+  <script src="js/stats.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
