@@ -1,0 +1,42 @@
+rules_version = '2';
+
+// NOTE: this app has no login screen — anyone who opens it just picks a name.
+// These rules validate the *shape* of the data (so a stray bug or curious
+// visitor can't corrupt it), but they cannot verify someone really is the
+// person they picked, since there's no server-side identity behind that
+// choice. That's an intentional tradeoff for a small private app; if this
+// ever needs real access control, layer Firebase Auth on top and swap the
+// `isKnownUser` checks for `request.auth.token.name == user`.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isKnownUser(name) {
+      return name in ['PersonA', 'PersonB']; // TODO: match src/users.ts
+    }
+
+    // TODO: replace `items` and its fields with your actual top-level
+    // collection and schema. Keep the pattern: validate required keys,
+    // bound string lengths, and check any "who did this" field against
+    // isKnownUser.
+    function isValidItem(data) {
+      return data.keys().hasAll(['title', 'addedBy', 'createdAt'])
+        && data.title is string && data.title.size() > 0 && data.title.size() < 200
+        && isKnownUser(data.addedBy);
+    }
+
+    match /items/{itemId} {
+      allow read: if true;
+      allow create: if isValidItem(request.resource.data);
+      allow update: if isValidItem(request.resource.data);
+      allow delete: if true;
+
+      // TODO: if you have a per-user sub-resource (ratings, votes, etc.),
+      // key the doc ID by user name and validate both the key and the shape:
+      // match /ratings/{user} {
+      //   allow read: if true;
+      //   allow write: if isKnownUser(user) && request.resource.data.stars is int
+      //     && request.resource.data.stars >= 1 && request.resource.data.stars <= 5;
+      //   allow delete: if isKnownUser(user);
+      // }
+    }
+  }
+}
