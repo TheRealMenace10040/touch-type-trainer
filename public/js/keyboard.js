@@ -1,24 +1,51 @@
 window.App = window.App || {};
 
 (function () {
-  const ROWS = [
-    ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='],
-    ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\'],
-    ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', "'"],
-    ['z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/']
-  ];
-
   const SHIFT_LEFT_ID = 'shiftleft';
   const SHIFT_RIGHT_ID = 'shiftright';
+
+  // u = width in key-units (1u = one standard key). Decorative keys (Tab,
+  // Caps, Enter, Backspace, Ctrl, Alt) complete the physical-keyboard look
+  // but are never targeted by lessons and never receive next-key/flash
+  // states — typing.js already ignores their real-keyboard equivalents.
+  const ROWS = [
+    [
+      { k: '`', u: 1 }, { k: '1', u: 1 }, { k: '2', u: 1 }, { k: '3', u: 1 }, { k: '4', u: 1 },
+      { k: '5', u: 1 }, { k: '6', u: 1 }, { k: '7', u: 1 }, { k: '8', u: 1 }, { k: '9', u: 1 },
+      { k: '0', u: 1 }, { k: '-', u: 1 }, { k: '=', u: 1 },
+      { k: 'backspace', label: '⌫', u: 2, decorative: true }
+    ],
+    [
+      { k: 'tab', label: 'Tab', u: 1.5, decorative: true },
+      { k: 'q', u: 1 }, { k: 'w', u: 1 }, { k: 'e', u: 1 }, { k: 'r', u: 1 }, { k: 't', u: 1 },
+      { k: 'y', u: 1 }, { k: 'u', u: 1 }, { k: 'i', u: 1 }, { k: 'o', u: 1 }, { k: 'p', u: 1 },
+      { k: '[', u: 1 }, { k: ']', u: 1 }, { k: '\\', u: 1.5 }
+    ],
+    [
+      { k: 'capslock', label: 'Caps', u: 1.75, decorative: true },
+      { k: 'a', u: 1 }, { k: 's', u: 1 }, { k: 'd', u: 1 }, { k: 'f', u: 1 }, { k: 'g', u: 1 },
+      { k: 'h', u: 1 }, { k: 'j', u: 1 }, { k: 'k', u: 1 }, { k: 'l', u: 1 }, { k: ';', u: 1 },
+      { k: "'", u: 1 },
+      { k: 'enter', label: 'Enter', u: 2.25, decorative: true }
+    ],
+    [
+      { k: SHIFT_LEFT_ID, label: 'Shift', u: 2.25, isShift: true, finger: 'left-pinky' },
+      { k: 'z', u: 1 }, { k: 'x', u: 1 }, { k: 'c', u: 1 }, { k: 'v', u: 1 }, { k: 'b', u: 1 },
+      { k: 'n', u: 1 }, { k: 'm', u: 1 }, { k: ',', u: 1 }, { k: '.', u: 1 }, { k: '/', u: 1 },
+      { k: SHIFT_RIGHT_ID, label: 'Shift', u: 2.75, isShift: true, finger: 'right-pinky' }
+    ],
+    [
+      { k: 'controlleft', label: 'Ctrl', u: 1.25, decorative: true },
+      { k: 'altleft', label: 'Alt', u: 1.25, decorative: true },
+      { k: ' ', label: 'Space', u: 10, isSpace: true, finger: 'thumb' },
+      { k: 'altright', label: 'Alt', u: 1.25, decorative: true },
+      { k: 'controlright', label: 'Ctrl', u: 1.25, decorative: true }
+    ]
+  ];
 
   let containerEl = null;
   let keyEls = {}; // key char (lowercase) or shift id -> element
   let currentNextKeys = [];
-
-  function keyLabel(k) {
-    if (k === ' ') return '';
-    return k;
-  }
 
   function buildKeyboard(container) {
     containerEl = container;
@@ -30,55 +57,42 @@ window.App = window.App || {};
     ROWS.forEach((row, rowIndex) => {
       const rowEl = document.createElement('div');
       rowEl.className = 'kb-row kb-row-' + rowIndex;
-      row.forEach((k) => {
+
+      row.forEach((entry) => {
         const keyEl = document.createElement('div');
-        const finger = FM.KEY_TO_FINGER[k] || 'thumb';
         keyEl.className = 'key';
-        keyEl.dataset.key = k;
-        keyEl.dataset.finger = finger;
-        keyEl.style.setProperty('--finger-color', FM.FINGER_COLORS[finger]);
-        keyEl.textContent = keyLabel(k);
-        if (FM.HOME_ROW_KEYS.includes(k)) {
+        keyEl.style.setProperty('--u', entry.u);
+        keyEl.dataset.key = entry.k;
+
+        // Only true letter/number/symbol keys get the visible per-finger
+        // dot (matches the design spec: space and Shift carry a finger for
+        // consistency/at-rest tinting, but no dot; decorative keys get
+        // neither).
+        let finger = entry.finger || null;
+        if (!entry.decorative && !finger) {
+          finger = FM.KEY_TO_FINGER[entry.k] || null;
+          if (finger) keyEl.classList.add('key-dot');
+        }
+        if (finger) {
+          keyEl.dataset.finger = finger;
+          keyEl.style.setProperty('--finger-color', FM.FINGER_COLORS[finger]);
+        }
+
+        keyEl.textContent = entry.label || entry.k.toUpperCase();
+
+        if (!entry.decorative && FM.HOME_ROW_KEYS.includes(entry.k)) {
           keyEl.classList.add('home-bump');
         }
+        if (entry.decorative) {
+          keyEl.classList.add('key-decorative');
+        }
+
         rowEl.appendChild(keyEl);
-        keyEls[k] = keyEl;
+        keyEls[entry.k] = keyEl;
       });
+
       container.appendChild(rowEl);
     });
-
-    // Bottom row: shift keys + space bar.
-    const bottomRow = document.createElement('div');
-    bottomRow.className = 'kb-row kb-row-bottom';
-
-    const shiftLeft = document.createElement('div');
-    shiftLeft.className = 'key key-shift';
-    shiftLeft.dataset.key = SHIFT_LEFT_ID;
-    shiftLeft.dataset.finger = 'left-pinky';
-    shiftLeft.style.setProperty('--finger-color', FM.FINGER_COLORS['left-pinky']);
-    shiftLeft.textContent = 'Shift';
-    bottomRow.appendChild(shiftLeft);
-    keyEls[SHIFT_LEFT_ID] = shiftLeft;
-
-    const spaceEl = document.createElement('div');
-    spaceEl.className = 'key key-space';
-    spaceEl.dataset.key = ' ';
-    spaceEl.dataset.finger = 'thumb';
-    spaceEl.style.setProperty('--finger-color', FM.FINGER_COLORS['thumb']);
-    spaceEl.textContent = 'Space';
-    bottomRow.appendChild(spaceEl);
-    keyEls[' '] = spaceEl;
-
-    const shiftRight = document.createElement('div');
-    shiftRight.className = 'key key-shift';
-    shiftRight.dataset.key = SHIFT_RIGHT_ID;
-    shiftRight.dataset.finger = 'right-pinky';
-    shiftRight.style.setProperty('--finger-color', FM.FINGER_COLORS['right-pinky']);
-    shiftRight.textContent = 'Shift';
-    bottomRow.appendChild(shiftRight);
-    keyEls[SHIFT_RIGHT_ID] = shiftRight;
-
-    container.appendChild(bottomRow);
   }
 
   function clearNextKeys() {

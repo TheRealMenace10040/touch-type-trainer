@@ -20,16 +20,19 @@ window.App = window.App || {};
 
   const HOME_ROW_KEYS = ['f', 'j'];
 
+  // Cool→warm hue sweep, same chroma/lightness (matches the "Signal" design
+  // spec: index fingers share the yellow accent hue, others step outward
+  // through magenta/violet).
   const FINGER_COLORS = {
-    'left-pinky': '#e63946',
-    'left-ring': '#f3722c',
-    'left-middle': '#f9c74f',
-    'left-index': '#43aa8b',
-    'right-index': '#4d908e',
-    'right-middle': '#277da1',
-    'right-ring': '#9d4edd',
-    'right-pinky': '#d63384',
-    'thumb': '#adb5bd'
+    'left-pinky': 'oklch(0.78 0.19 320)',
+    'left-ring': 'oklch(0.78 0.19 305)',
+    'left-middle': 'oklch(0.78 0.19 290)',
+    'left-index': 'oklch(0.78 0.19 90)',
+    'right-index': 'oklch(0.78 0.19 90)',
+    'right-middle': 'oklch(0.78 0.19 290)',
+    'right-ring': 'oklch(0.78 0.19 305)',
+    'right-pinky': 'oklch(0.78 0.19 320)',
+    'thumb': 'oklch(0.5 0.02 280)'
   };
 
   const FINGER_LABELS = {
